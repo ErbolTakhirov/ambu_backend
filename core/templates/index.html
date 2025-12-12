@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambulance Smart Route (Google Maps)</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+    <div id="app" v-cloak>
+        <!-- Map Container -->
+        <div id="map"></div>
+
+        <!-- Sidebar / Control Panel -->
+        <div class="sidebar">
+            <header>
+                <div class="logo">
+                    <span class="logo-icon">🚑</span>
+                    <h1>AmbulanceAI</h1>
+                </div>
+                <p>Emergency Response Routing</p>
+            </header>
+
+            <div class="controls">
+                <!-- API Key Warning -->
+                <div v-if="!isApiLoaded" class="warning-box">
+                    ⚠️ Google Maps API Key missing or invalid. Check config.js.
+                </div>
+
+                <div class="form-group">
+                    <label>Ambulance Station (Start)</label>
+                    <select v-model="selectedHospitalIndex" @change="onHospitalSelect" :disabled="!isApiLoaded">
+                        <option value="" disabled selected>Select Base Station...</option>
+                        <option v-for="(h, index) in hospitals" :key="index" :value="index">
+                            {{ h.name }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Destination (Patient/Hospital)</label>
+                    <input type="text" ref="destinationInput" placeholder="Enter destination..."
+                        :disabled="!isApiLoaded">
+                </div>
+
+                <button @click="calculateRoute" class="btn primary" :disabled="!isApiLoaded || isLoading">
+                    <span v-if="isLoading">Calculating...</span>
+                    <span v-else>Build Emergency Route</span>
+                </button>
+
+                <button @click="clearRoute" class="btn secondary" :disabled="!isApiLoaded || !hasRoute">
+                    Clear Map
+                </button>
+            </div>
+
+            <!-- Route Details -->
+            <div v-if="routeDetails" class="route-details">
+                <div class="detail-card main-route">
+                    <div class="detail-header">
+                        <h3>Primary Route</h3>
+                        <span class="tag">Recommended</span>
+                    </div>
+                    <div class="stats">
+                        <div class="stat">
+                            <span class="value">{{ routeDetails.duration }}</span>
+                            <span class="label">Time</span>
+                        </div>
+                        <div class="stat">
+                            <span class="value">{{ routeDetails.distance }}</span>
+                            <span class="label">Distance</span>
+                        </div>
+                    </div>
+                    <div class="traffic-note">
+                        Traffic Condition: <strong>{{ routeDetails.trafficStatus }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="errorMessage" class="error-toast">
+                {{ errorMessage }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Config -->
+    <script src="{% static 'js/config.js' %}"></script>
+    <!-- Main App -->
+    <script src="{% static 'js/script.js' %}"></script>
+</body>
+
+</html>

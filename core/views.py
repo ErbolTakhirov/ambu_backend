@@ -1,8 +1,12 @@
 from rest_framework import generics, views, status
 from rest_framework.response import Response
+from django.views.generic import TemplateView
 from .models import Hospital, RouteRequest
 from .serializers import HospitalSerializer, RouteRequestSerializer
 from .services import calculate_route
+
+class IndexView(TemplateView):
+    template_name = 'index.html'
 
 class HospitalListView(generics.ListAPIView):
     queryset = Hospital.objects.all()
